@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Xunit;
-using CutOptimization;
 
-namespace Tests
+namespace CutOptimization.Tests
 {
-    public class Tests
+    public class BruteForceSolverTests
     {
         [Fact]
         public void Test1()
@@ -18,8 +16,8 @@ namespace Tests
 
             var pttnRst = BruteForceSolver.solve(requiredBarSetInputs, rawBarHeightInput);
             var nBar = pttnRst.fst;
-            
-            Assert.True(nBar == 4);
+
+            Assert.Equal(4, nBar);
         }
     }
 }

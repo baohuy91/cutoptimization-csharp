@@ -40,7 +40,7 @@ namespace CutOptimization
             {
                 string pStr = "";
                 pattern.ForEach(p => pStr += p.toString() + ", ");
-                Console.WriteLine("(x%d): %s\n", rstMap[pattern], pStr);
+                Console.WriteLine("(x{0}): {1}\n", rstMap[pattern], pStr);
             };
 
             int totalStock = 0;

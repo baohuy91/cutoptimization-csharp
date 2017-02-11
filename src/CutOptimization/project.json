@@ -1,19 +1,30 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "debugType": "portable"
+    "debugType": "portable",
+    "allowUnsafe": true
+  },
+  "packOptions": {
+    "files": {
+      "mappings": {
+        "runtimes/osx.10.12-x64/native":{
+          "includeFiles":["liblpsolve55.dylib"]
+        },
+        "runtimes/win-10-x64/native":{
+          "includeFiles":["lpsolve55.dll"]
+        }
+      }
+    }
   },
   "runtimes": {
-    "osx.10.12-x64":{}
+    "osx.10.12-x64":{},
+    "win10-x64":{}
   },
   "dependencies": {},
   "frameworks": {
     "netstandard1.6": {
       "dependencies": {
         "NETStandard.Library": "1.6.1"
-      },
-      "bin":{
-        "assembly":"./lpsolve55.dll"
       }
     }
   }

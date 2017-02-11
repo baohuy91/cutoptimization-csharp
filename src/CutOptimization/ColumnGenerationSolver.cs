@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using lpsolve_macos;
 
 namespace CutOptimization
 {
@@ -33,53 +34,53 @@ namespace CutOptimization
             double[][] patternMat = genPatternMatrix(odLenVec, odNumVec, stockLen);
             double[] minPatternNums = new double[nOrder];
 
-            Lpsolve.Init(".");
+            // Lpsolve.Init(".");
             int iter;
             for (iter = 0; iter < MAX_ITER; iter++)
             {
                 ;
-                    // Solve Linear Programming problem
-                    double[][] lpRst = calLP(patternMat, odNumVec);
-                    int solFlag = (int)lpRst[0][0];
-                    if (solFlag != (int) Lpsolve.lpsolve_return.OPTIMAL)
-                    {
-                        Console.WriteLine("Can't solve anymore");
-                        break;
-                    }
-                    minPatternNums = lpRst[1];
-                    double[] dualCostVector = lpRst[2];
+                // Solve Linear Programming problem
+                double[][] lpRst = calLP(patternMat, odNumVec);
+                int solFlag = (int)lpRst[0][0];
+                if (solFlag != (int)Lpsolve.lpsolve_return.OPTIMAL)
+                {
+                    Console.WriteLine("Can't solve anymore");
+                    break;
+                }
+                minPatternNums = lpRst[1];
+                double[] dualCostVector = lpRst[2];
 
-                    // Solve Knapsack problem
-                    double[][] ksRst = calKnapsack(dualCostVector, odLenVec, stockLen);
-                    double reducedCost = ksRst[0][0];
-                    double[] newPattern = ksRst[1];
+                // Solve Knapsack problem
+                double[][] ksRst = calKnapsack(dualCostVector, odLenVec, stockLen);
+                double reducedCost = ksRst[0][0];
+                double[] newPattern = ksRst[1];
 
-                    // TODO: use native optimized variable instead
-                    if (reducedCost <= 1.000000000001)
-                    { // epsilon threshold due to double value error
-                        Console.WriteLine("Optimized");
-                        break;
-                    }
+                // TODO: use native optimized variable instead
+                if (reducedCost <= 1.000000000001)
+                { // epsilon threshold due to double value error
+                    Console.WriteLine("Optimized");
+                    break;
+                }
 
-                    // Cal leaving column
-                    int[] lcRst = calLeavingColumn(patternMat, newPattern, minPatternNums);
-                    int lcSolFlag = lcRst[0];
-                    int leavingColIndex = lcRst[1];
-                    // System.out.println("Leaving column index: " + leavingColIndex);
+                // Cal leaving column
+                int[] lcRst = calLeavingColumn(patternMat, newPattern, minPatternNums);
+                int lcSolFlag = lcRst[0];
+                int leavingColIndex = lcRst[1];
+                // Console.WriteLine("Leaving column index: {0}", leavingColIndex);
 
-                    if (lcSolFlag != (int) Lpsolve.lpsolve_return.OPTIMAL)
-                    {
-                        Console.WriteLine("Can't solve anymore");
-                        break;
-                    }
+                if (lcSolFlag != (int)Lpsolve.lpsolve_return.OPTIMAL)
+                {
+                    Console.WriteLine("Can't solve anymore");
+                    break;
+                }
 
-                    // Save new pattern
-                    for (int r = 0; r < patternMat.Length; r++)
-                    {
-                        patternMat[r][leavingColIndex] = newPattern[r];
-                    }
+                // Save new pattern
+                for (int r = 0; r < patternMat.Length; r++)
+                {
+                    patternMat[r][leavingColIndex] = newPattern[r];
+                }
 
-                
+
             }
 
             if (iter == MAX_ITER)
@@ -87,11 +88,11 @@ namespace CutOptimization
                 Console.WriteLine("Maximum of iter reached! Solution is not quite optimized");
             }
 
-            //        System.out.println("Optimized pattern: ");
-            //        for (int r = 0; r < patternMat.length; r++) {
-            //            System.out.print(Arrays.toString(patternMat[r]));
-            //            System.out.println(": " + minPatternNums[r + 1]);
-            //        }
+            // Console.WriteLine("Optimized pattern: ");
+            // for (int r = 0; r < patternMat.Length; r++)
+            // {
+            //     Console.WriteLine("{0}: {1}", string.Join(", ", patternMat[r]), minPatternNums[r + 1]);
+            // }
 
             // ------------ Round up to keep integer part of result ----------------
             double[] remainOdNumVec = new double[odNumVec.Length];
@@ -104,7 +105,7 @@ namespace CutOptimization
                     remainOdNumVec[r + 1] -= row[c] * Math.Floor(minPatternNums[c]);
                 }
             }
-            //        System.out.println("Leftovers: " + Arrays.toString(remainOdNumVec));
+            // Console.WriteLine("Leftovers: {0}", string.Join(", ", remainOdNumVec));
 
             // Optimized for the rest of pattern by BruteForce
             List<BarSet> remainOrderSets = new List<BarSet>();
@@ -191,6 +192,7 @@ namespace CutOptimization
 
             int nVar = basicMatrix.Length;
             IntPtr solver = Lpsolve.make_lp(0, nVar);
+            Lpsolve.set_verbose(solver, 1);
 
             // add constraints
             for (int r = 0; r < nVar; r++)
@@ -209,7 +211,7 @@ namespace CutOptimization
             Lpsolve.set_minim(solver);
 
             // solve the problem
-            int solFlag = (int) Lpsolve.solve(solver);
+            int solFlag = (int)Lpsolve.solve(solver);
 
             // solution
             double[] rhs = new double[Lpsolve.get_Ncolumns(solver)];
@@ -231,7 +233,7 @@ namespace CutOptimization
 
             rst[2] = new double[nVar + 1];
             rst[2][0] = nVar;
-            duals.CopyTo(rst[2], 1);
+            Array.Copy(duals, 1, rst[2], 1, nVar);
             return rst;
         }
 
@@ -247,6 +249,7 @@ namespace CutOptimization
         {
             int nVar = objArr.Length - 1;
             IntPtr solver = Lpsolve.make_lp(0, nVar);
+            Lpsolve.set_verbose(solver, 1);
 
             // add constraints
             Lpsolve.add_constraint(solver, orderLenVec, Lpsolve.lpsolve_constr_types.LE, stockLen);
@@ -261,7 +264,7 @@ namespace CutOptimization
             Lpsolve.set_maxim(solver);
 
             // solve the problem
-            int solFlag = (int) Lpsolve.solve(solver);
+            int solFlag = (int)Lpsolve.solve(solver);
 
             // solution
             double reducedCost = Lpsolve.get_objective(solver);
@@ -289,6 +292,7 @@ namespace CutOptimization
 
             int nVar = basicMatrix.Length;
             IntPtr solver = Lpsolve.make_lp(0, nVar);
+            Lpsolve.set_verbose(solver, 1);
 
             // add constraints
             for (int r = 0; r < nVar; r++)
@@ -303,11 +307,11 @@ namespace CutOptimization
                 minCoef[i] = 1;
             }
             minCoef[0] = nVar;
-            Lpsolve.set_obj_fn(solver,minCoef);
+            Lpsolve.set_obj_fn(solver, minCoef);
             Lpsolve.set_minim(solver);
 
             // solve the problem
-            int solFlag = (int) Lpsolve.solve(solver);
+            int solFlag = (int)Lpsolve.solve(solver);
 
             // solution
             double[] var = new double[Lpsolve.get_Ncolumns(solver)];
