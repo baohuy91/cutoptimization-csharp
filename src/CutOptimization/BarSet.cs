@@ -11,9 +11,10 @@ namespace CutOptimization
             this.num = num;
         }
 
-        public string toString()
+
+        override public string ToString()
         {
-            return this.len + "x" + this.num;
+            return string.Format("{0}v {1}", this.num, this.len);
         }
     }
 }

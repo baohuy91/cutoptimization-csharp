@@ -4,17 +4,69 @@ using System.Collections.Generic;
 namespace CutOptimization
 {
 
+
     public class CutOptimization
     {
+        /**
+        * Main calculation
+        *
+        * @param stockLengthInput raw bar length in stock
+        * @param sawWidthInput    width of saw
+        * @param orderSetInputs   required bar set
+        * @return List of pre-format cutting pattern with number: "{stocklen} {numRequiredStock} {patterns...}"
+        */
+        public static List<string> calRequiredBarWithOutPut(
+                double stockLengthInput,
+                double sawWidthInput,
+                List<BarSet> orderSetInputs)
+        {
+            var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
+
+            // result
+            var patternStrs = new List<string>();
+            foreach (var pattern in rstMap.Keys)
+            {
+                var pStrArr = new List<string>();
+                pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                string pStr = string.Join(" + ", pStrArr);
+                patternStrs.Add(string.Format("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput));
+            };
+
+            return patternStrs;
+        }
+
         /**
          * Main calculation
          *
          * @param stockLengthInput raw bar length in stock
          * @param sawWidthInput    width of saw
          * @param orderSetInputs   required bar set
-         * @return num of require bar
+         * @return number of total required stock
          */
         public static int calRequiredBar(
+                        double stockLengthInput,
+                        double sawWidthInput,
+                        List<BarSet> orderSetInputs)
+        {
+            var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
+
+            int totalStock = 0;
+            foreach (var n in rstMap.Values)
+            {
+                totalStock += n;
+            }
+            return totalStock;
+        }
+
+        /**
+         * Main calculation
+         *
+         * @param stockLengthInput raw bar length in stock
+         * @param sawWidthInput    width of saw
+         * @param orderSetInputs   required bar set
+         * @return Dictionary of data with map between pattern and number of required stock for this pattern
+         */
+        public static Dictionary<List<BarSet>, int> calRequiredBarCore(
                 double stockLengthInput,
                 double sawWidthInput,
                 List<BarSet> orderSetInputs)
@@ -35,20 +87,16 @@ namespace CutOptimization
                 ptrn.ForEach(b => b.len -= sawWidthInput);
             };
 
-            // Print result
+            // Print result to console
             foreach (var pattern in rstMap.Keys)
             {
-                string pStr = "";
-                pattern.ForEach(p => pStr += p.toString() + ", ");
-                Console.WriteLine("(x{0}): {1}\n", rstMap[pattern], pStr);
+                var pStrArr = new List<string>();
+                pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                string pStr = string.Join(" + ", pStrArr);
+                Console.WriteLine("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput);
             };
 
-            int totalStock = 0;
-            foreach (var n in rstMap.Values)
-            {
-                totalStock += n;
-            }
-            return totalStock;
+            return rstMap;
         }
     }
 }
