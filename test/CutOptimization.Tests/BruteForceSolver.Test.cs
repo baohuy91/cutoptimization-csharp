@@ -5,14 +5,17 @@ namespace CutOptimization.Tests
 {
     public class BruteForceSolverTests
     {
-        [Fact]
-        public void Test1()
+        [TheoryAttribute]
+        [InlineDataAttribute(1000d, new double[] { 600d, 200d }, new int[] { 4, 5 }, 4)]
+        public void Test1(double stock, double[] orderLens, int[] orderNums, int nRequiredBar)
         {
             // Input
-            int rawBarHeightInput = 1000;
-            List<BarSet> requiredBarSetInputs = new List<BarSet>(){
-                new BarSet(600d, 4),
-                new BarSet(200d, 5)};
+            double rawBarHeightInput = stock;
+            var requiredBarSetInputs = new List<BarSet>();
+            for (int i = 0; i < orderLens.Length; i++)
+            {
+                requiredBarSetInputs.Add(new BarSet(orderLens[i], orderNums[i]));
+            }
 
             var pttnRst = BruteForceSolver.solve(requiredBarSetInputs, rawBarHeightInput);
             var nBar = pttnRst.fst;
