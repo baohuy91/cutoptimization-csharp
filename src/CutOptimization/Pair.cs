@@ -1,4 +1,4 @@
-namespace CutOptimzation
+namespace CutOptimization
 {
     public class Pair<A, B>
     {

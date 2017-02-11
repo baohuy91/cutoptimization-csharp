@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-namespace CutOptimzation
+namespace CutOptimization
 {
-    public class BruteForceSolver
+    public static class BruteForceSolver
     {
         /**
          * This recursive generate all possible
@@ -87,7 +87,7 @@ namespace CutOptimzation
                         curOrderIndex + 1, remainOrderSets, stockLen - curOrderSet.len * nBar);
 
                 int barNum = nBar;
-                subPatterns.ForEach(c => c[0] = new BarSet(curOrderSet.len, barNum));
+                subPatterns.ForEach(c => c.Insert(0, new BarSet(curOrderSet.len, barNum)));
                 possiblePatterns.AddRange(subPatterns);
             }
 
@@ -101,7 +101,7 @@ namespace CutOptimzation
 
         private static bool isEmpty(List<BarSet> barSets)
         {
-            return barSets.Find(s => s.num > 0) == null;
+            return barSets.TrueForAll(s => s.num == 0);
         }
     }
 }

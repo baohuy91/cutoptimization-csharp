@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System;
 
-namespace CutOptimzation
+namespace CutOptimization
 {
     public class ColumnGenerationSolver
     {

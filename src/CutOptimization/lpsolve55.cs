@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace CutOptimzation
+namespace CutOptimization
 {
     public static class Lpsolve
     {
