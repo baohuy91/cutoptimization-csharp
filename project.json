@@ -16,6 +16,11 @@
         }
       },
       "imports": "dnxcore50"
+    },
+    "net20":{
+      "dependencies":{
+        "LpSolveDotNet": "3.0.1"
+      }
     }
   }
 }
