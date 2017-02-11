@@ -33,15 +33,15 @@ namespace CutOptimzation
             double[][] patternMat = genPatternMatrix(odLenVec, odNumVec, stockLen);
             double[] minPatternNums = new double[nOrder];
 
+            Lpsolve.Init(".");
             int iter;
             for (iter = 0; iter < MAX_ITER; iter++)
             {
-                try
-                {
+                ;
                     // Solve Linear Programming problem
                     double[][] lpRst = calLP(patternMat, odNumVec);
                     int solFlag = (int)lpRst[0][0];
-                    if (solFlag != LpSolve.OPTIMAL)
+                    if (solFlag != (int) Lpsolve.lpsolve_return.OPTIMAL)
                     {
                         Console.WriteLine("Can't solve anymore");
                         break;
@@ -67,7 +67,7 @@ namespace CutOptimzation
                     int leavingColIndex = lcRst[1];
                     // System.out.println("Leaving column index: " + leavingColIndex);
 
-                    if (lcSolFlag != LpSolve.OPTIMAL)
+                    if (lcSolFlag != (int) Lpsolve.lpsolve_return.OPTIMAL)
                     {
                         Console.WriteLine("Can't solve anymore");
                         break;
@@ -79,11 +79,7 @@ namespace CutOptimzation
                         patternMat[r][leavingColIndex] = newPattern[r];
                     }
 
-                }
-                catch (LpSolveException e)
-                {
-                    e.printStackTrace();
-                }
+                
             }
 
             if (iter == MAX_ITER)
@@ -194,13 +190,12 @@ namespace CutOptimzation
             double[][] basicMatrix = cloneMatrix(basicMatrixIn); // LP solve modifies our input array
 
             int nVar = basicMatrix.Length;
-            LpSolve solver = LpSolve.makeLp(0, nVar);
-            solver.setVerbose(LpSolve.CRITICAL);
+            IntPtr solver = Lpsolve.make_lp(0, nVar);
 
             // add constraints
             for (int r = 0; r < nVar; r++)
             {
-                solver.addConstraint(basicMatrix[r], LpSolve.EQ, orderNumVec[r + 1]);
+                Lpsolve.add_constraint(solver, basicMatrix[r], Lpsolve.lpsolve_constr_types.EQ, orderNumVec[r + 1]);
             }
 
             // set objective function
@@ -210,18 +205,20 @@ namespace CutOptimzation
                 minCoef[i] = 1;
             }
             minCoef[0] = nVar;
-            solver.setObjFn(minCoef);
-            solver.setMinim();
+            Lpsolve.set_obj_fn(solver, minCoef);
+            Lpsolve.set_minim(solver);
 
             // solve the problem
-            const int solFlag = solver.solve();
+            int solFlag = (int) Lpsolve.solve(solver);
 
             // solution
-            double[] rhs = solver.getPtrVariables();
-            double[] duals = solver.getPtrDualSolution();
+            double[] rhs = new double[Lpsolve.get_Ncolumns(solver)];
+            Lpsolve.get_variables(solver, rhs);
+            double[] duals = new double[Lpsolve.get_Ncolumns(solver) + Lpsolve.get_Nrows(solver) + 1];
+            Lpsolve.get_dual_solution(solver, duals);
 
             // delete the problem and free memory
-            solver.deleteLp();
+            Lpsolve.delete_lp(solver);
 
             // Prepare result
             double[][] rst = new double[3][];
@@ -249,30 +246,30 @@ namespace CutOptimzation
         private static double[][] calKnapsack(double[] objArr, double[] orderLenVec, double stockLen)
         {
             int nVar = objArr.Length - 1;
-            LpSolve solver = LpSolve.makeLp(0, nVar);
-            solver.setVerbose(LpSolve.CRITICAL);
+            IntPtr solver = Lpsolve.make_lp(0, nVar);
 
             // add constraints
-            solver.addConstraint(orderLenVec, LpSolve.LE, stockLen);
+            Lpsolve.add_constraint(solver, orderLenVec, Lpsolve.lpsolve_constr_types.LE, stockLen);
             // objArr.length is equal to nCol + 1
             for (int c = 1; c <= nVar; c++)
             {
-                solver.setInt(c, true);
+                Lpsolve.set_int(solver, c, 1);
             }
 
             // set objective function
-            solver.setObjFn(objArr);
-            solver.setMaxim();
+            Lpsolve.set_obj_fn(solver, objArr);
+            Lpsolve.set_maxim(solver);
 
             // solve the problem
-            const int solFlag = solver.solve();
+            int solFlag = (int) Lpsolve.solve(solver);
 
             // solution
-            double reducedCost = solver.getObjective();
-            double[] var = solver.getPtrVariables();
+            double reducedCost = Lpsolve.get_objective(solver);
+            double[] var = new double[Lpsolve.get_Ncolumns(solver)];
+            Lpsolve.get_variables(solver, var);
 
             // delete the problem and free memory
-            solver.deleteLp();
+            Lpsolve.delete_lp(solver);
 
             // Prepare result
             double[][] rst = new double[2][];
@@ -291,13 +288,12 @@ namespace CutOptimzation
             double[][] basicMatrix = cloneMatrix(basicMatrixIn); // LP solve modifies our input array
 
             int nVar = basicMatrix.Length;
-            LpSolve solver = LpSolve.makeLp(0, nVar);
-            solver.setVerbose(LpSolve.CRITICAL);
+            IntPtr solver = Lpsolve.make_lp(0, nVar);
 
             // add constraints
             for (int r = 0; r < nVar; r++)
             {
-                solver.addConstraint(basicMatrix[r], LpSolve.EQ, newPattern[r]);
+                Lpsolve.add_constraint(solver, basicMatrix[r], Lpsolve.lpsolve_constr_types.EQ, newPattern[r]);
             }
 
             // set objective function
@@ -307,14 +303,15 @@ namespace CutOptimzation
                 minCoef[i] = 1;
             }
             minCoef[0] = nVar;
-            solver.setObjFn(minCoef);
-            solver.setMinim();
+            Lpsolve.set_obj_fn(solver,minCoef);
+            Lpsolve.set_minim(solver);
 
             // solve the problem
-            const int solFlag = solver.solve();
+            int solFlag = (int) Lpsolve.solve(solver);
 
             // solution
-            const double[] var = solver.getPtrVariables();
+            double[] var = new double[Lpsolve.get_Ncolumns(solver)];
+            Lpsolve.get_variables(solver, var);
 
             // leaving column
             int minIndex = -1;
@@ -329,7 +326,7 @@ namespace CutOptimzation
             }
 
             // delete the problem and free memory
-            solver.deleteLp();
+            Lpsolve.delete_lp(solver);
 
             return new int[] { solFlag, minIndex + 1 };
         }

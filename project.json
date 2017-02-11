@@ -1,25 +1,16 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "debugType": "portable",
-    "emitEntryPoint": true
+    "debugType": "portable"
   },
-  "dependencies": {
-    "LpSolveDotNet": "3.0.1"
+  "runtimes": {
+    "osx.10.12-x64":{}
   },
+  "dependencies": {},
   "frameworks": {
-    "netcoreapp1.1": {
+    "netstandard1.6": {
       "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.1.0"
-        }
-      },
-      "imports": "dnxcore50"
-    },
-    "net20":{
-      "dependencies":{
-        "LpSolveDotNet": "3.0.1"
+        "NETStandard.Library": "1.6.1"
       }
     }
   }
