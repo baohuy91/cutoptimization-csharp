@@ -15,7 +15,7 @@ namespace CutOptimization
         * @param orderSetInputs   required bar set
         * @return List of pre-format cutting pattern with number: "{stocklen} {numRequiredStock} {patterns...}"
         */
-        public static List<string> calRequiredBarWithOutPut(
+        public static List<string> calRequiredBarWithFormat(
                 double stockLengthInput,
                 double sawWidthInput,
                 List<BarSet> orderSetInputs)
