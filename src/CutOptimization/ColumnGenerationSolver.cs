@@ -121,7 +121,10 @@ namespace CutOptimization
             if (remainOrderSets.Count > 0)
             {
                 // Sort DESC
-                remainOrderSets.Sort((a, b) => Math.Sign(b.len - a.len));
+                remainOrderSets.Sort(delegate (BarSet a, BarSet b)
+                {
+                    return Math.Sign(b.len - a.len);
+                });
 
                 // Solve
                 remainRst = BruteForceSolver.solve(remainOrderSets, stockLen);
@@ -130,7 +133,15 @@ namespace CutOptimization
                 for (int i = 0; i < remainRst.snd.Count; i++)
                 {
                     List<BarSet> ptrn = remainRst.snd[i];
-                    List<BarSet> trimPtrn = ptrn.FindAll(b => b.num > 0);
+                    // List<BarSet> trimPtrn = ptrn.FindAll(delegate (BarSet b) { return b.num > 0; });
+                    var trimPtrn = new List<BarSet>();
+                    foreach (var b in ptrn)
+                    {
+                        if (b.num > 0)
+                        {
+                            trimPtrn.Add(b);
+                        }
+                    }
                     remainRst.snd[i] = trimPtrn;
                 }
             }
@@ -159,7 +170,14 @@ namespace CutOptimization
                 rstMap.Add(pattern, (int)minPatternNums[c]);
             }
             // Add leftover to major result map
-            remainRst.snd.FindAll(p => p.Count > 0).ForEach(pattern => rstMap.Add(pattern, 1));
+
+            foreach (List<BarSet> pattern in remainRst.snd)
+            {
+                if (pattern.Count > 0)
+                {
+                    rstMap.Add(pattern, 1);
+                }
+            }
 
             return rstMap;
         }

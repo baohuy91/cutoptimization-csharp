@@ -62,7 +62,8 @@ namespace CutOptimization
         {
             var possiblePatterns = new List<List<BarSet>>();
 
-            bool canCut = orderSets.Find(barSet => barSet.num > 0 && barSet.len <= stockLen) != null;
+            // bool canCut = orderSets.Find(barSet => barSet.num > 0 && barSet.len <= stockLen) != null;
+            bool canCut = checkCanCut(orderSets, stockLen);
             if (!canCut)
             {
                 possiblePatterns.Add(new List<BarSet>()); // Create array to let father func put bar in
@@ -87,7 +88,11 @@ namespace CutOptimization
                         curOrderIndex + 1, remainOrderSets, stockLen - curOrderSet.len * nBar);
 
                 int barNum = nBar;
-                subPatterns.ForEach(c => c.Insert(0, new BarSet(curOrderSet.len, barNum)));
+                // subPatterns.ForEach(c => c.Insert(0, new BarSet(curOrderSet.len, barNum)));
+                foreach (var pttrn in subPatterns)
+                {
+                    pttrn.Insert(0, new BarSet(curOrderSet.len, barNum));
+                }
                 possiblePatterns.AddRange(subPatterns);
             }
 
@@ -101,7 +106,32 @@ namespace CutOptimization
 
         private static bool isEmpty(List<BarSet> barSets)
         {
-            return barSets.TrueForAll(s => s.num == 0);
+            // return barSets.TrueForAll(s => s.num == 0);
+            foreach (var s in barSets)
+            {
+                if (s.num > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /**
+         * Check with remanining stockLen, whether we can still cut
+         */
+        private static bool checkCanCut(List<BarSet> orderSets, double stockLen)
+        {
+            foreach (var barSet in orderSets)
+            {
+                if (barSet.num > 0 && barSet.len <= stockLen)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

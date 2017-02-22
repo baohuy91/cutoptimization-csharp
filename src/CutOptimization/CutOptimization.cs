@@ -27,7 +27,11 @@ namespace CutOptimization
             foreach (var pattern in rstMap.Keys)
             {
                 var pStrArr = new List<string>();
-                pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                // pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                foreach (BarSet bs in pattern)
+                {
+                    pStrArr.Add(bs.ToString());
+                }
                 string pStr = string.Join(" + ", pStrArr);
                 patternStrs.Add(string.Format("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput));
             };
@@ -76,7 +80,11 @@ namespace CutOptimization
             // Normalize problem by remove saw width to Cutting Stock Problem (CSP)
             double stockLength = stockLengthInput + sawWidthInput;
             List<BarSet> orderSets = new List<BarSet>();
-            orderSetInputs.ForEach(barSetIn => orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num)));
+            // orderSetInputs.ForEach(barSetIn => orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num)));
+            foreach (BarSet barSetIn in orderSetInputs)
+            {
+                orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num));
+            }
 
             // Solve CSP
             Dictionary<List<BarSet>, int> rstMap = ColumnGenerationSolver.solve(orderSets, stockLength);
@@ -84,14 +92,21 @@ namespace CutOptimization
             // Convert problem back to before normalized
             foreach (var ptrn in rstMap.Keys)
             {
-                ptrn.ForEach(b => b.len -= sawWidthInput);
-            };
+                foreach (var b in ptrn)
+                {
+                    b.len -= sawWidthInput;
+                }
+            }
 
             // Print result to console
             foreach (var pattern in rstMap.Keys)
             {
                 var pStrArr = new List<string>();
-                pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                // pattern.ForEach(p => pStrArr.Add(p.ToString()));
+                foreach (var p in pattern)
+                {
+                    pStrArr.Add(p.ToString());
+                }
                 string pStr = string.Join(" + ", pStrArr);
                 Console.WriteLine("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput);
             };
