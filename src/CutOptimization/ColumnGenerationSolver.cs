@@ -17,6 +17,29 @@ namespace CutOptimization
          */
         public static Dictionary<List<BarSet>, int> solve(List<BarSet> orderSets, double stockLen)
         {
+            var pair = solveByLinearProgramming(orderSets, stockLen);
+            var pttrnMap = pair.fst;
+            var remainOrderSets = pair.snd;
+
+            var remainPttrns = solveRemainOrders(remainOrderSets, stockLen);
+
+            // Add leftover to major result map
+            foreach (List<BarSet> pattern in remainPttrns)
+            {
+                if (pattern.Count > 0)
+                {
+                    pttrnMap.Add(pattern, 1);
+                }
+            }
+
+            return pttrnMap;
+        }
+        /**
+         * Solve most of pattern by linear programming
+         * @returns 1st value is optimized pattern, 2nd value is the remain orders that haven't been solved
+         */
+        public static Pair<Dictionary<List<BarSet>, int>, List<BarSet>> solveByLinearProgramming(List<BarSet> orderSets, double stockLen)
+        {
             int nOrder = orderSets.Count;
 
             // Convert to Lp solve-friendly format: [arrayLen, x1, x2, 3...]
@@ -117,39 +140,6 @@ namespace CutOptimization
                 }
             }
 
-            Pair<int, List<List<BarSet>>> remainRst = new Pair<int, List<List<BarSet>>>(0, new List<List<BarSet>>());
-            if (remainOrderSets.Count > 0)
-            {
-                // Sort DESC
-                remainOrderSets.Sort(delegate (BarSet a, BarSet b)
-                {
-                    return Math.Sign(b.len - a.len);
-                });
-
-                // Solve
-                remainRst = BruteForceSolver.solve(remainOrderSets, stockLen);
-
-                // Remove BarSets in patterns that have num = 0
-                for (int i = 0; i < remainRst.snd.Count; i++)
-                {
-                    List<BarSet> ptrn = remainRst.snd[i];
-                    // List<BarSet> trimPtrn = ptrn.FindAll(delegate (BarSet b) { return b.num > 0; });
-                    var trimPtrn = new List<BarSet>();
-                    foreach (var b in ptrn)
-                    {
-                        if (b.num > 0)
-                        {
-                            trimPtrn.Add(b);
-                        }
-                    }
-                    remainRst.snd[i] = trimPtrn;
-                }
-            }
-            //        System.out.println("Leftover patterns:");
-            //        for (List<BarSet> bSets : remainRst.snd) {
-            //            System.out.println(Arrays.toString(bSets.toArray()));
-            //        }
-
             // Prepare result
             Dictionary<List<BarSet>, int> rstMap = new Dictionary<List<BarSet>, int>();
             for (int c = 1; c < nOrder + 1; c++)
@@ -169,17 +159,42 @@ namespace CutOptimization
                 }
                 rstMap.Add(pattern, (int)minPatternNums[c]);
             }
-            // Add leftover to major result map
 
-            foreach (List<BarSet> pattern in remainRst.snd)
+            return new Pair<Dictionary<List<BarSet>, int>, List<BarSet>>(rstMap, remainOrderSets);
+        }
+
+        public static List<List<BarSet>> solveRemainOrders(List<BarSet> remainOrderSets, double stockLen)
+        {
+            if (remainOrderSets.Count == 0)
             {
-                if (pattern.Count > 0)
-                {
-                    rstMap.Add(pattern, 1);
-                }
+                return new List<List<BarSet>>();
             }
 
-            return rstMap;
+            // Sort DESC
+            remainOrderSets.Sort(delegate (BarSet a, BarSet b)
+            {
+                return Math.Sign(b.len - a.len);
+            });
+
+            // Solve
+            var remainRst = BruteForceSolver.solve(remainOrderSets, stockLen);
+            var pttrns = remainRst.snd;
+
+            // Remove BarSets in patterns that have num = 0
+            for (int i = 0; i < pttrns.Count; i++)
+            {
+                var trimPtrn = new List<BarSet>();
+                foreach (var bs in pttrns[i])
+                {
+                    if (bs.num > 0)
+                    {
+                        trimPtrn.Add(bs);
+                    }
+                }
+                pttrns[i] = trimPtrn;
+            }
+
+            return pttrns;
         }
 
         /**

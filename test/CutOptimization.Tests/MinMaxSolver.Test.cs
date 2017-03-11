@@ -6,9 +6,9 @@ namespace CutOptimization
     public class MinMaxSolverTests
     {
         [TheoryAttribute]
-        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 3, 900d, 0.30)] // 0.15
+        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 100d, 0.05)] // 0.15
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 330d }, new int[] { 3 }, 1, 10d, 0.01)]
-        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 300d, 0.15)]
+        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 100d, 0.05)]
         public void TestSolve(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums, int nRequiredBar, double expectedWastedLen, double lossRatio)
         {
             var orderSets = new List<BarSet>();

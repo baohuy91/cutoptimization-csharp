@@ -22,9 +22,13 @@ namespace CutOptimization
         {
             var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
 
-            // result
+            return toString(rstMap, stockLengthInput);
+        }
+
+        private static List<string> toString(Dictionary<List<BarSet>, int> pttrnMap, double stockLen)
+        {
             var patternStrs = new List<string>();
-            foreach (var pattern in rstMap.Keys)
+            foreach (var pattern in pttrnMap.Keys)
             {
                 var pStrArr = new List<string>();
                 // pattern.ForEach(p => pStrArr.Add(p.ToString()));
@@ -33,7 +37,7 @@ namespace CutOptimization
                     pStrArr.Add(bs.ToString());
                 }
                 string pStr = string.Join(" + ", pStrArr);
-                patternStrs.Add(string.Format("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput));
+                patternStrs.Add(string.Format("{2} {0} {1}\n", pttrnMap[pattern], pStr, stockLen));
             };
 
             return patternStrs;
@@ -54,12 +58,7 @@ namespace CutOptimization
         {
             var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
 
-            int totalStock = 0;
-            foreach (var n in rstMap.Values)
-            {
-                totalStock += n;
-            }
-            return totalStock;
+            return UtilStatistics.sumInt(new List<int>(rstMap.Values));
         }
 
         /**
@@ -75,21 +74,75 @@ namespace CutOptimization
                 double sawWidthInput,
                 List<BarSet> orderSetInputs)
         {
-            Console.WriteLine("-----Bar len: %s-----\n", stockLengthInput);
+            Console.WriteLine(string.Format("-----Bar len: {0}-----\n", stockLengthInput));
 
             // Normalize problem by remove saw width to Cutting Stock Problem (CSP)
+            var pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
+            double stockLength = pair.fst;
+            var orderSets = pair.snd;
+
+            // Solve CSP
+            var rstMap = ColumnGenerationSolver.solve(orderSets, stockLength);
+
+            // Convert problem back to before normalized
+            rstMap = denomalizeResult(rstMap, sawWidthInput);
+
+            printToConsole(rstMap, stockLengthInput);
+
+            return rstMap;
+        }
+
+        /**
+         * Main calculation
+         *
+         * @param stockLengthInput raw bar length in stock
+         * @param sawWidthInput    width of saw
+         * @param orderSetInputs   required bar set
+         * @param minLeftover      the lower bound of unacceptable remaining stock length after cutting
+         * @param maxLeftover      the upper bound of unacceptable remaining stock length after cutting
+         * @return Dictionary of data with map between pattern and number of required stock for this pattern
+         */
+        public static Dictionary<List<BarSet>, int> calRequiredBarCoreMinMax(
+                double stockLengthInput,
+                double sawWidthInput,
+                List<BarSet> orderSetInputs,
+                double minLeftover,
+                double maxLeftover)
+        {
+            Console.WriteLine(string.Format("-----Bar len: {0} bound:{1}-{2}-----\n", stockLengthInput, minLeftover, maxLeftover));
+
+            // Normalize problem by remove saw width to Cutting Stock Problem (CSP)
+            var pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
+            double stockLength = pair.fst;
+            var orderSets = pair.snd;
+
+            // Solve CSP
+            var rstMap = MinMaxSolver.solve(orderSets, stockLength, minLeftover, maxLeftover);
+
+            // Convert problem back to before normalized
+            rstMap = denomalizeResult(rstMap, sawWidthInput);
+
+            printToConsole(rstMap, stockLengthInput);
+
+            return rstMap;
+        }
+
+        private static Pair<double, List<BarSet>> normalizeInput(double stockLengthInput,
+                double sawWidthInput,
+                List<BarSet> orderSetInputs)
+        {
             double stockLength = stockLengthInput + sawWidthInput;
-            List<BarSet> orderSets = new List<BarSet>();
-            // orderSetInputs.ForEach(barSetIn => orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num)));
+            var orderSets = new List<BarSet>();
             foreach (BarSet barSetIn in orderSetInputs)
             {
                 orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num));
             }
+            return new Pair<double, List<BarSet>>(stockLength, orderSets);
+        }
 
-            // Solve CSP
-            Dictionary<List<BarSet>, int> rstMap = ColumnGenerationSolver.solve(orderSets, stockLength);
-
-            // Convert problem back to before normalized
+        private static Dictionary<List<BarSet>, int> denomalizeResult(Dictionary<List<BarSet>, int> rstMap, double sawWidthInput)
+        {
+            // XXX: this function modify param
             foreach (var ptrn in rstMap.Keys)
             {
                 foreach (var b in ptrn)
@@ -98,7 +151,12 @@ namespace CutOptimization
                 }
             }
 
-            // Print result to console
+            return rstMap;
+        }
+
+        // Print result to console
+        private static void printToConsole(Dictionary<List<BarSet>, int> rstMap, double stockLen)
+        {
             foreach (var pattern in rstMap.Keys)
             {
                 var pStrArr = new List<string>();
@@ -108,10 +166,8 @@ namespace CutOptimization
                     pStrArr.Add(p.ToString());
                 }
                 string pStr = string.Join(" + ", pStrArr);
-                Console.WriteLine("{2} {0} {1}\n", rstMap[pattern], pStr, stockLengthInput);
+                Console.WriteLine("{2} {0} {1}\n", rstMap[pattern], pStr, stockLen);
             };
-
-            return rstMap;
         }
     }
 }
