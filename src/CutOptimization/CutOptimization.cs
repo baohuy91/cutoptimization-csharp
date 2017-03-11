@@ -25,6 +25,28 @@ namespace CutOptimization
             return toString(rstMap, stockLengthInput);
         }
 
+        /**
+        * Main calculation
+        *
+        * @param stockLengthInput raw bar length in stock
+        * @param sawWidthInput    width of saw
+        * @param orderSetInputs   required bar set
+        * @param minLeftover      the lower bound of unacceptable remaining stock length after cutting
+        * @param maxLeftover      the upper bound of unacceptable remaining stock length after cutting
+        * @return List of pre-format cutting pattern with number: "{stocklen} {numRequiredStock} {patterns...}"
+        */
+        public static List<string> calRequiredBarMinMaxWithFormat(
+                double stockLengthInput,
+                double sawWidthInput,
+                List<BarSet> orderSetInputs,
+                double minLeftover,
+                double maxLeftover)
+        {
+            var rstMap = calRequiredBarCoreMinMax(stockLengthInput, sawWidthInput, orderSetInputs, minLeftover, maxLeftover);
+
+            return toString(rstMap, stockLengthInput);
+        }
+
         private static List<string> toString(Dictionary<List<BarSet>, int> pttrnMap, double stockLen)
         {
             var patternStrs = new List<string>();
