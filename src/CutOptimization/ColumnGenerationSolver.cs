@@ -21,7 +21,7 @@ namespace CutOptimization
             var pttrnMap = pair.fst;
             var remainOrderSets = pair.snd;
 
-            var remainPttrns = solveRemainOrders(remainOrderSets, stockLen);
+            var remainPttrns = BruteForceSolver.solve(remainOrderSets, stockLen);
 
             // Add leftover to major result map
             foreach (List<BarSet> pattern in remainPttrns)
@@ -161,40 +161,6 @@ namespace CutOptimization
             }
 
             return new Pair<Dictionary<List<BarSet>, int>, List<BarSet>>(rstMap, remainOrderSets);
-        }
-
-        public static List<List<BarSet>> solveRemainOrders(List<BarSet> remainOrderSets, double stockLen)
-        {
-            if (remainOrderSets.Count == 0)
-            {
-                return new List<List<BarSet>>();
-            }
-
-            // Sort DESC
-            remainOrderSets.Sort(delegate (BarSet a, BarSet b)
-            {
-                return Math.Sign(b.len - a.len);
-            });
-
-            // Solve
-            var remainRst = BruteForceSolver.solve(remainOrderSets, stockLen);
-            var pttrns = remainRst.snd;
-
-            // Remove BarSets in patterns that have num = 0
-            for (int i = 0; i < pttrns.Count; i++)
-            {
-                var trimPtrn = new List<BarSet>();
-                foreach (var bs in pttrns[i])
-                {
-                    if (bs.num > 0)
-                    {
-                        trimPtrn.Add(bs);
-                    }
-                }
-                pttrns[i] = trimPtrn;
-            }
-
-            return pttrns;
         }
 
         /**

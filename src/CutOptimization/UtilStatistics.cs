@@ -30,5 +30,23 @@ namespace CutOptimization
             }
             return sum;
         }
+
+        public static double calTotalBar(Dictionary<List<BarSet>, int> patterns)
+        {
+            var totalBar = 0;
+            foreach (var pattern in patterns)
+            {
+                var nBar = 0;
+                foreach (var barSet in pattern.Key)
+                {
+                    nBar += barSet.num;
+                }
+                
+                var nPatternCut = pattern.Value;
+                totalBar += nBar * nPatternCut;
+            }
+
+            return totalBar;
+        }
     }
 }
