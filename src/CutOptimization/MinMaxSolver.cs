@@ -45,7 +45,7 @@ namespace CutOptimization
             // Solve remaining order
             if (remainOrderSet.count() > 0)
             {
-                var remainingPttrns = ColumnGenerationSolver.solveRemainOrders(remainOrderSet.getBarSets(), stockLen);
+                var remainingPttrns = BruteForceSolver.solveMinMax(remainOrderSet.getBarSets(), stockLen, minLeftOver, maxLeftOver);
                 // add to new pttrn map
                 foreach (var pttrn in remainingPttrns)
                 {
