@@ -77,5 +77,26 @@ namespace CutOptimization.Tests
                 Assert.NotInRange(leftover, minLeftover + 0.001, maxLeftover - 0.001);
             }
         }
+
+        [TheoryAttribute]
+        [InlineDataAttribute(1000d, 0d, 30d, 200d, new double[] { 900d}, new int[] { 10 })]
+        public void TestcalRequiredBarCoreMinMax_WithCantCutCondition_ExpectEmptyResult(double stock, double saw, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums)
+        {
+            // Input
+            double rawBarHeightInput = stock;
+            double sawWidthInput = saw;
+            var requiredBarSetInputs = new List<BarSet>();
+            var expectedTotalBar = 0;
+            for (int i = 0; i < orderLens.Length; i++)
+            {
+                requiredBarSetInputs.Add(new BarSet(orderLens[i], orderNums[i]));
+                expectedTotalBar += orderNums[i];
+            }
+
+            // Exercise
+            var ret = CutOptimization.calRequiredBarCoreMinMax(rawBarHeightInput, sawWidthInput, requiredBarSetInputs, minLeftover, maxLeftover);
+
+            Assert.Equal(0, ret.Count);
+        }
     }
 }

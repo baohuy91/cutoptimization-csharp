@@ -84,6 +84,7 @@ namespace CutOptimization
 
         /**
          * Select the most optimized cut but doesn't violate the min max condition
+         * It won't return empty bar sets
          */
         private static BarSets selectValidOptimizedBar(double stockLen, List<List<BarSet>> notFilteredMinMaxPttns, double minLeftOver, double maxLeftOver)
         {
