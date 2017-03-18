@@ -6,12 +6,12 @@ namespace CutOptimization
     {
         public static double calWastedLen(Dictionary<List<BarSet>, int> patterns, double stockLen, double maxLeftover)
         {
-            var totalWastedLen = 0d;
-            foreach (var pattern in patterns)
+            double totalWastedLen = 0d;
+            foreach (KeyValuePair<List<BarSet>, int> pattern in patterns)
             {
-                var nPatternCut = pattern.Value;
-                var remainLen = stockLen;
-                foreach (var barSet in pattern.Key)
+                int nPatternCut = pattern.Value;
+                double remainLen = stockLen;
+                foreach (BarSet barSet in pattern.Key)
                 {
                     remainLen -= barSet.len * barSet.num;
                 }
@@ -24,7 +24,7 @@ namespace CutOptimization
 
         public static int sumInt(List<int> values){
             int sum = 0;
-            foreach (var n in values)
+            foreach (int n in values)
             {
                 sum += n;
             }
@@ -33,16 +33,16 @@ namespace CutOptimization
 
         public static double calTotalBar(Dictionary<List<BarSet>, int> patterns)
         {
-            var totalBar = 0;
-            foreach (var pattern in patterns)
+            double totalBar = 0;
+            foreach (KeyValuePair<List<BarSet>, int> pattern in patterns)
             {
-                var nBar = 0;
-                foreach (var barSet in pattern.Key)
+                int nBar = 0;
+                foreach (BarSet barSet in pattern.Key)
                 {
                     nBar += barSet.num;
                 }
                 
-                var nPatternCut = pattern.Value;
+                int nPatternCut = pattern.Value;
                 totalBar += nBar * nPatternCut;
             }
 

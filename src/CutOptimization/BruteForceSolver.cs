@@ -29,14 +29,14 @@ namespace CutOptimization
                 return Math.Sign(b.len - a.len);
             });
 
-            var remainRst = BruteForceSolver.solveRecursive(orderSets, stockLength, useMinMaxFilter, minLeftover, maxLeftover);
-            var pttrns = remainRst.snd;
+            Pair<int, List<List<BarSet>>> remainRst = BruteForceSolver.solveRecursive(orderSets, stockLength, useMinMaxFilter, minLeftover, maxLeftover);
+            List<List<BarSet>> pttrns = remainRst.snd;
 
             // Remove BarSets in patterns that have num = 0
             for (int i = 0; i < pttrns.Count; i++)
             {
-                var trimPtrn = new List<BarSet>();
-                foreach (var bs in pttrns[i])
+                List<BarSet> trimPtrn = new List<BarSet>();
+                foreach (BarSet bs in pttrns[i])
                 {
                     if (bs.num > 0)
                     {
@@ -114,7 +114,7 @@ namespace CutOptimization
          */
         private static List<List<BarSet>> calPossibleCutsFor1Stock(int curOrderIndex, List<BarSet> orderSets, double stockLen)
         {
-            var possiblePatterns = new List<List<BarSet>>();
+            List<List<BarSet>> possiblePatterns = new List<List<BarSet>>();
 
             // bool canCut = orderSets.Find(barSet => barSet.num > 0 && barSet.len <= stockLen) != null;
             bool canCut = checkCanCut(orderSets, stockLen);
@@ -143,7 +143,7 @@ namespace CutOptimization
 
                 int barNum = nBar;
                 // subPatterns.ForEach(c => c.Insert(0, new BarSet(curOrderSet.len, barNum)));
-                foreach (var pttrn in subPatterns)
+                foreach (List<BarSet> pttrn in subPatterns)
                 {
                     pttrn.Insert(0, new BarSet(curOrderSet.len, barNum));
                 }
@@ -155,10 +155,10 @@ namespace CutOptimization
 
         public static List<List<BarSet>> applyMinMaxFilter(List<List<BarSet>> possiblePttrns, double stockLen, double minLeftover, double maxLeftover)
         {
-            var filteredPttrns = new List<List<BarSet>>();
-            foreach (var pttrn in possiblePttrns)
+            List<List<BarSet>> filteredPttrns = new List<List<BarSet>>();
+            foreach (List<BarSet> pttrn in possiblePttrns)
             {
-                var leftover = stockLen - new BarSets(pttrn).countTotalLen();
+                double leftover = stockLen - new BarSets(pttrn).countTotalLen();
                 if (leftover <= minLeftover || leftover >= maxLeftover)
                 {
                     filteredPttrns.Add(pttrn);
@@ -176,7 +176,7 @@ namespace CutOptimization
         private static bool isEmpty(List<BarSet> barSets)
         {
             // return barSets.TrueForAll(s => s.num == 0);
-            foreach (var s in barSets)
+            foreach (BarSet s in barSets)
             {
                 if (s.num > 0)
                 {
@@ -192,7 +192,7 @@ namespace CutOptimization
          */
         private static bool checkCanCut(List<BarSet> orderSets, double stockLen)
         {
-            foreach (var barSet in orderSets)
+            foreach (BarSet barSet in orderSets)
             {
                 if (barSet.num > 0 && barSet.len <= stockLen)
                 {
