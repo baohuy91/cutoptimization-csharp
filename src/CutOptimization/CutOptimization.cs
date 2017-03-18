@@ -20,7 +20,7 @@ namespace CutOptimization
                 double sawWidthInput,
                 List<BarSet> orderSetInputs)
         {
-            var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
+            Dictionary<List<BarSet>, int> rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
 
             return toString(rstMap, stockLengthInput);
         }
@@ -42,23 +42,23 @@ namespace CutOptimization
                 double minLeftover,
                 double maxLeftover)
         {
-            var rstMap = calRequiredBarCoreMinMax(stockLengthInput, sawWidthInput, orderSetInputs, minLeftover, maxLeftover);
+            Dictionary<List<BarSet>, int> rstMap = calRequiredBarCoreMinMax(stockLengthInput, sawWidthInput, orderSetInputs, minLeftover, maxLeftover);
 
             return toString(rstMap, stockLengthInput);
         }
 
         private static List<string> toString(Dictionary<List<BarSet>, int> pttrnMap, double stockLen)
         {
-            var patternStrs = new List<string>();
-            foreach (var pattern in pttrnMap.Keys)
+            List<string> patternStrs = new List<string>();
+            foreach (List<BarSet> pattern in pttrnMap.Keys)
             {
-                var pStrArr = new List<string>();
+                List<string> pStrArr = new List<string>();
                 // pattern.ForEach(p => pStrArr.Add(p.ToString()));
                 foreach (BarSet bs in pattern)
                 {
                     pStrArr.Add(bs.ToString());
                 }
-                string pStr = string.Join(" + ", pStrArr);
+                string pStr = string.Join(" + ", pStrArr.ToArray());
                 patternStrs.Add(string.Format("{2} {0} {1}\n", pttrnMap[pattern], pStr, stockLen));
             };
 
@@ -78,7 +78,7 @@ namespace CutOptimization
                         double sawWidthInput,
                         List<BarSet> orderSetInputs)
         {
-            var rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
+            Dictionary<List<BarSet>, int> rstMap = calRequiredBarCore(stockLengthInput, sawWidthInput, orderSetInputs);
 
             return UtilStatistics.sumInt(new List<int>(rstMap.Values));
         }
@@ -99,12 +99,12 @@ namespace CutOptimization
             Console.WriteLine(string.Format("-----Bar len: {0}-----\n", stockLengthInput));
 
             // Normalize problem by remove saw width to Cutting Stock Problem (CSP)
-            var pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
+            Pair<double, List<BarSet>> pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
             double stockLength = pair.fst;
-            var orderSets = pair.snd;
+            List<BarSet> orderSets = pair.snd;
 
             // Solve CSP
-            var rstMap = ColumnGenerationSolver.solve(orderSets, stockLength);
+            Dictionary<List<BarSet>, int> rstMap = ColumnGenerationSolver.solve(orderSets, stockLength);
 
             // Convert problem back to before normalized
             rstMap = denomalizeResult(rstMap, sawWidthInput);
@@ -134,12 +134,12 @@ namespace CutOptimization
             Console.WriteLine(string.Format("-----Bar len: {0} bound:{1}-{2}-----\n", stockLengthInput, minLeftover, maxLeftover));
 
             // Normalize problem by remove saw width to Cutting Stock Problem (CSP)
-            var pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
+            Pair<double, List<BarSet>> pair = normalizeInput(stockLengthInput, sawWidthInput, orderSetInputs);
             double stockLength = pair.fst;
-            var orderSets = pair.snd;
+            List<BarSet> orderSets = pair.snd;
 
             // Solve CSP
-            var rstMap = MinMaxSolver.solve(orderSets, stockLength, minLeftover, maxLeftover);
+            Dictionary<List<BarSet>, int> rstMap = MinMaxSolver.solve(orderSets, stockLength, minLeftover, maxLeftover);
 
             // Convert problem back to before normalized
             rstMap = denomalizeResult(rstMap, sawWidthInput);
@@ -154,7 +154,7 @@ namespace CutOptimization
                 List<BarSet> orderSetInputs)
         {
             double stockLength = stockLengthInput + sawWidthInput;
-            var orderSets = new List<BarSet>();
+            List<BarSet> orderSets = new List<BarSet>();
             foreach (BarSet barSetIn in orderSetInputs)
             {
                 orderSets.Add(new BarSet(barSetIn.len + sawWidthInput, barSetIn.num));
@@ -165,9 +165,9 @@ namespace CutOptimization
         private static Dictionary<List<BarSet>, int> denomalizeResult(Dictionary<List<BarSet>, int> rstMap, double sawWidthInput)
         {
             // XXX: this function modify param
-            foreach (var ptrn in rstMap.Keys)
+            foreach (List<BarSet> ptrn in rstMap.Keys)
             {
-                foreach (var b in ptrn)
+                foreach (BarSet b in ptrn)
                 {
                     b.len -= sawWidthInput;
                 }
@@ -179,15 +179,15 @@ namespace CutOptimization
         // Print result to console
         private static void printToConsole(Dictionary<List<BarSet>, int> rstMap, double stockLen)
         {
-            foreach (var pattern in rstMap.Keys)
+            foreach (List<BarSet> pattern in rstMap.Keys)
             {
-                var pStrArr = new List<string>();
+                List<string> pStrArr = new List<string>();
                 // pattern.ForEach(p => pStrArr.Add(p.ToString()));
-                foreach (var p in pattern)
+                foreach (BarSet p in pattern)
                 {
                     pStrArr.Add(p.ToString());
                 }
-                string pStr = string.Join(" + ", pStrArr);
+                string pStr = string.Join(" + ", pStrArr.ToArray());
                 Console.WriteLine("{2} {0} {1}\n", rstMap[pattern], pStr, stockLen);
             };
         }

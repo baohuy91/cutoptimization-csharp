@@ -18,7 +18,7 @@ namespace CutOptimization
         public BarSets(List<BarSet> barSets)
         {
             this.barSets = new List<BarSet>();
-            foreach (var bs in barSets)
+            foreach (BarSet bs in barSets)
             {
                 this.barSets.Add(new BarSet(bs.len, bs.num));
             }
@@ -37,15 +37,15 @@ namespace CutOptimization
         public void addAll(BarSets barSets2)
         {
             // Check and add to existing bar set
-            foreach (var bs2 in barSets2.barSets)
+            foreach (BarSet bs2 in barSets2.barSets)
             {
                 if (bs2.num == 0)
                 {
                     continue;
                 }
 
-                var isExist = false;
-                foreach (var bs1 in barSets)
+                bool isExist = false;
+                foreach (BarSet bs1 in barSets)
                 {
                     if (bs1.len == bs2.len)
                     {
@@ -66,7 +66,7 @@ namespace CutOptimization
         public void addLen(double len)
         {
             // Check and add to existing bar set
-            foreach (var bs in barSets)
+            foreach (BarSet bs in barSets)
             {
                 if (bs.len == len)
                 {
@@ -97,7 +97,7 @@ namespace CutOptimization
                 return 0;
             }
 
-            var len = barSets[0].len;
+            double len = barSets[0].len;
             barSets[0].num--;
 
             // There is no empty bar set in BarSets
@@ -111,8 +111,8 @@ namespace CutOptimization
 
         public double countTotalLen()
         {
-            var totalLen = 0d;
-            foreach (var bs in barSets)
+            double totalLen = 0d;
+            foreach (BarSet bs in barSets)
             {
                 totalLen += bs.len * bs.num;
             }
@@ -123,7 +123,7 @@ namespace CutOptimization
         public int count()
         {
             int count = 0;
-            foreach (var bs in barSets)
+            foreach (BarSet bs in barSets)
             {
                 count += bs.num;
             }
@@ -133,7 +133,7 @@ namespace CutOptimization
 
         public bool isEmpty()
         {
-            foreach (var s in barSets)
+            foreach (BarSet s in barSets)
             {
                 if (s.num > 0)
                 {
@@ -146,13 +146,13 @@ namespace CutOptimization
 
         override public string ToString()
         {
-            var pStrArr = new List<string>();
-            foreach (var bs in this.barSets)
+            List<string> pStrArr = new List<string>();
+            foreach (BarSet bs in this.barSets)
             {
                 pStrArr.Add(string.Format("{0}v {1}", bs.len, bs.num));
             }
 
-            return string.Join(" + ", pStrArr);
+            return string.Join(" + ", pStrArr.ToArray());
         }
     }
 }

@@ -17,11 +17,12 @@ namespace CutOptimization
          */
         public static Dictionary<List<BarSet>, int> solve(List<BarSet> orderSets, double stockLen)
         {
-            var pair = solveByLinearProgramming(orderSets, stockLen);
-            var pttrnMap = pair.fst;
-            var remainOrderSets = pair.snd;
+            Pair<Dictionary<List<BarSet>, int>, List<BarSet>> pair = solveByLinearProgramming(orderSets, stockLen);
 
-            var remainPttrns = BruteForceSolver.solve(remainOrderSets, stockLen);
+            Dictionary<List<BarSet>, int> pttrnMap = pair.fst;
+            List<BarSet> remainOrderSets = pair.snd;
+
+            List<List<BarSet>> remainPttrns = BruteForceSolver.solve(remainOrderSets, stockLen);
 
             // Add leftover to major result map
             foreach (List<BarSet> pattern in remainPttrns)
