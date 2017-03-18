@@ -139,7 +139,8 @@ namespace CutOptimization
             List<BarSet> orderSets = pair.snd;
 
             // Solve CSP
-            Dictionary<List<BarSet>, int> rstMap = MinMaxSolver.solve(orderSets, stockLength, minLeftover, maxLeftover);
+            MinMaxSolver solver = new MinMaxSolver(minLeftover, maxLeftover);
+            Dictionary<List<BarSet>, int> rstMap = solver.solve(orderSets, stockLength);
 
             // Convert problem back to before normalized
             rstMap = denomalizeResult(rstMap, sawWidthInput);

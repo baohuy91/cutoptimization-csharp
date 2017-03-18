@@ -112,15 +112,15 @@ namespace CutOptimization
          * This func generate all possible pattern to be fit in one stock len (or remain stock len)
          * from the @param{curOrderIndex} to end of orderSets
          */
-        private static List<List<BarSet>> calPossibleCutsFor1Stock(int curOrderIndex, List<BarSet> orderSets, double stockLen)
+        public static List<List<BarSet>> calPossibleCutsFor1Stock(int curOrderIndex, List<BarSet> orderSets, double stockLen)
         {
             List<List<BarSet>> possiblePatterns = new List<List<BarSet>>();
 
-            // bool canCut = orderSets.Find(barSet => barSet.num > 0 && barSet.len <= stockLen) != null;
             bool canCut = checkCanCut(orderSets, stockLen);
             if (!canCut)
             {
-                possiblePatterns.Add(new List<BarSet>()); // Create array to let father func put bar in
+                // Create array to let father func put bar in
+                possiblePatterns.Add(new List<BarSet>());
                 return possiblePatterns;
             }
 
@@ -142,7 +142,6 @@ namespace CutOptimization
                         curOrderIndex + 1, remainOrderSets, stockLen - curOrderSet.len * nBar);
 
                 int barNum = nBar;
-                // subPatterns.ForEach(c => c.Insert(0, new BarSet(curOrderSet.len, barNum)));
                 foreach (List<BarSet> pttrn in subPatterns)
                 {
                     pttrn.Insert(0, new BarSet(curOrderSet.len, barNum));

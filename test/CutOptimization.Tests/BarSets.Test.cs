@@ -53,6 +53,65 @@ namespace CutOptimization.Tests
         }
 
         [TheoryAttribute]
+        [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 5d }, new int[] { 1 },
+        new double[] { 5d, 5d })]
+        [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 5d }, new int[] { 3 },
+        new double[] { })]
+        public void TestSubstract(double[] len1s, int[] num1s, double[] len2s, int[] num2s, double[] expectedPopLens)
+        {
+            // Prepare
+            var sut = initBarSets(len1s, num1s);
+            var barSets2 = initBarSets(len2s, num2s);
+
+            // Exercise
+            bool ret = sut.substractAll(barSets2);
+            Assert.Equal(true, ret);
+
+            // Assert
+            sut.sortAsc();
+            Assert.Equal(expectedPopLens.Length, sut.count());
+            // make sure barset is empty
+            if (expectedPopLens.Length == 0)
+            {
+                Assert.Equal(0, sut.getBarSets().Count);
+            }
+            foreach (var expectedLen in expectedPopLens)
+            {
+                Assert.Equal(expectedLen, sut.popLen());
+            }
+        }
+
+        [TheoryAttribute]
+        [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 5d }, new int[] { 4 })]
+        public void TestSubstract_WithInvalidParam(double[] len1s, int[] num1s, double[] len2s, int[] num2s)
+        {
+            // Prepare
+            var sut = initBarSets(len1s, num1s);
+            var barSets2 = initBarSets(len2s, num2s);
+
+            // Exercise
+            bool ret = sut.substractAll(barSets2);
+
+            Assert.Equal(false, ret);
+        }
+
+        [TheoryAttribute]
+        [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 3d }, new int[] { 2 }, false)]
+        [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 5d, 3d }, new int[] { 2, 1 }, false)]
+        [InlineDataAttribute(new double[] { 5d, 3d }, new int[] { 3, 2 }, new double[] { 3d, 5d }, new int[] { 2, 3 }, true)]
+        public void TestCompareEqualWith(double[] len1s, int[] num1s, double[] len2s, int[] num2s, bool expectedRet)
+        {
+            // Prepare
+            var sut = initBarSets(len1s, num1s);
+            var barSets2 = initBarSets(len2s, num2s);
+
+            // Exercise
+            bool ret = sut.compareEqualWith(barSets2);
+
+            Assert.Equal(expectedRet, ret);
+        }
+
+        [TheoryAttribute]
         [InlineDataAttribute(new double[] { 5d }, new int[] { 2 }, 6d, new double[] { 5d, 5d, 6d })]
         [InlineDataAttribute(new double[] { 5d, 6d }, new int[] { 2, 1 }, 7d, new double[] { 5d, 5d, 6d, 7d })]
         [InlineDataAttribute(new double[] { }, new int[] { }, 1d, new double[] { 1d })]

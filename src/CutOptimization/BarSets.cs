@@ -120,6 +120,73 @@ namespace CutOptimization
             return totalLen;
         }
 
+        /**
+         * @return true if can subtract
+         */
+        public bool substractAll(BarSets substractBarSets)
+        {
+            List<BarSet> rstBarSets = new BarSets(this.barSets).getBarSets();
+            foreach (BarSet bs in substractBarSets.barSets)
+            {
+                foreach (BarSet originBs in rstBarSets)
+                {
+                    if (originBs.len == bs.len)
+                    {
+                        if (originBs.num < bs.num)
+                        {
+                            // Invalid case
+                            return false;
+                        }
+                        originBs.num = originBs.num - bs.num;
+                    }
+                }
+            }
+
+            this.barSets = removeInvalidBarSet(rstBarSets);
+
+            return true;
+        }
+
+        private static List<BarSet> removeInvalidBarSet(List<BarSet> barSets)
+        {
+            List<BarSet> rstBarSets = new List<BarSet>();
+            foreach (BarSet bs in barSets)
+            {
+                if (bs.num > 0)
+                {
+                    rstBarSets.Add(bs);
+                }
+            }
+
+            return rstBarSets;
+        }
+
+        public bool compareEqualWith(BarSets comparedBarSets)
+        {
+            if (this.count() != comparedBarSets.count())
+            {
+                return false;
+            }
+
+            foreach (BarSet originBs in this.barSets)
+            {
+                foreach (BarSet bs in comparedBarSets.getBarSets())
+                {
+                    if (originBs.len == bs.len)
+                    {
+                        if (originBs.num != bs.num)
+                        {
+                            return false;
+                        }
+
+                        continue;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public int count()
         {
             int count = 0;

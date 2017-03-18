@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System;
-using lpsolve_win;
+using lpsolve_macos;
 
 namespace CutOptimization
 {
