@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -30,22 +31,51 @@ namespace CutOptimization
         }
 
         [TheoryAttribute]
+        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 900d }, new int[] { 10 })] 
+        public void TestSolve_WithCantCutCodition(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums)
+        {
+            var orderSets = new List<BarSet>();
+            for (var i = 0; i < orderLens.Length; i++)
+            {
+                orderSets.Add(new BarSet(orderLens[i], orderNums[i]));
+            }
+
+            // Exercise
+            var sut = new MinMaxSolver(minLeftover, maxLeftover);
+            var ret = sut.solve(orderSets, stock);
+
+            Assert.Equal(0, ret.Count);
+        }
+
+        [TheoryAttribute]
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 300d, 200d }, new int[] { 3, 3 }, new double[] { 200d, 200d, 300d, 300d })]
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 300d, 200d }, new int[] { 1, 3 }, new double[] { 200d, 200d, 300d })]
         [InlineDataAttribute(1000d, 200d, 300d, new double[] { 300d, 200d }, new int[] { 3, 1 }, new double[] { 300d, 300d, 300d })]
-        // Can't cut
-        [InlineDataAttribute(300d, 30d, 200d, new double[] { 200d }, new int[] { 3 }, new double[] { })]
+        [InlineDataAttribute(500d, 30d, 180d, new double[] { 300d }, new int[] { 2 }, new double[] { 300d })]
         public void TestOptimizeToOneStock(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums, double[] expectedNewPttrnPopLens)
         {
             BarSets orders = initPattern(orderLens, orderNums);
             MinMaxSolver sut = new MinMaxSolver(minLeftover, maxLeftover);
             BarSets pattern = sut.optimizeToOneStock(stock, orders);
             pattern.sortAsc();
+
             Assert.Equal(expectedNewPttrnPopLens.Length, pattern.count());
             foreach (double expectedPopLen in expectedNewPttrnPopLens)
             {
                 Assert.Equal(expectedPopLen, pattern.popLen());
             }
+        }
+
+        [TheoryAttribute]
+        [InlineDataAttribute(300d, 30d, 200d, new double[] { 200d }, new int[] { 3 })]
+        [InlineDataAttribute(500d, 30d, 400d, new double[] { 300d }, new int[] { 2 })]
+        public void TestOptimizeToOneStock_WithCantCutCondition_ExpectNull(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums)
+        {
+            BarSets orders = initPattern(orderLens, orderNums);
+            MinMaxSolver sut = new MinMaxSolver(minLeftover, maxLeftover);
+            BarSets ret = sut.optimizeToOneStock(stock, orders);
+
+            Assert.Null(ret);
         }
 
         private static BarSets initPattern(double[] lens, int[] nums)

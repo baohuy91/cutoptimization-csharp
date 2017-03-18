@@ -26,6 +26,11 @@ namespace CutOptimization
             while (orders.count() > 0)
             {
                 BarSets pttrn = optimizeToOneStock(stockLen, orders);
+                if (pttrn == null)
+                {
+                    // Can't solve with condition, return empty result
+                    return new Dictionary<List<BarSet>, int>();
+                }
                 addPatternToDictionary(pttrnMap, pttrn);
                 orders.substractAll(pttrn);
             }
@@ -38,20 +43,6 @@ namespace CutOptimization
             return rstMap;
         }
 
-        private static void addPatternToDictionary(Dictionary<BarSets, int> dic, BarSets barSets)
-        {
-            foreach (KeyValuePair<BarSets, int> entry in dic)
-            {
-                if (entry.Key.compareEqualWith(barSets))
-                {
-                    dic[entry.Key] += 1;
-                    return;
-                }
-            }
-
-            // If not exist add
-            dic.Add(barSets, 1);
-        }
 
         public BarSets optimizeToOneStock(double stockLen, BarSets orders)
         {
@@ -65,8 +56,8 @@ namespace CutOptimization
             }
 
             // If we failed, try to get pattern with usable leftover
-            List<List<BarSet>> PttnWithUsableLeftOver = BruteForceSolver.calPossibleCutsFor1Stock(0, orders.getBarSets(), stockLen - maxLeftOver);
-            foreach (List<BarSet> pttn in PttnWithUsableLeftOver)
+            List<List<BarSet>> pttnWithUsableLeftOver = BruteForceSolver.calPossibleCutsFor1Stock(0, orders.getBarSets(), stockLen - maxLeftOver);
+            foreach (List<BarSet> pttn in pttnWithUsableLeftOver)
             {
                 BarSets bs = new BarSets(pttn);
                 if (optimizedBarSets == null)
@@ -83,15 +74,28 @@ namespace CutOptimization
                 }
             }
 
+            if (optimizedBarSets == null || optimizedBarSets.isEmpty())
+            {
+                return null;
+            }
+
             return optimizedBarSets;
         }
 
+        /**
+         * Select the most optimized cut but doesn't violate the min max condition
+         */
         private static BarSets selectValidOptimizedBar(double stockLen, List<List<BarSet>> notFilteredMinMaxPttns, double minLeftOver, double maxLeftOver)
         {
             BarSets optimizedBarSets = null;
             foreach (List<BarSet> pttn in notFilteredMinMaxPttns)
             {
                 BarSets bs = new BarSets(pttn);
+                if (bs.isEmpty())
+                {
+                    continue;
+                }
+
                 double leftOver = stockLen - bs.countTotalLen();
                 if (leftOver < maxLeftOver && leftOver > minLeftOver)
                 {
@@ -112,6 +116,25 @@ namespace CutOptimization
             }
 
             return optimizedBarSets;
+        }
+
+        /**
+         * If bar sets with same pattern is exist, add up the count only
+         * if not exist, add new pattern with count = 1 to dictionary
+         */
+        private static void addPatternToDictionary(Dictionary<BarSets, int> dic, BarSets barSets)
+        {
+            foreach (KeyValuePair<BarSets, int> entry in dic)
+            {
+                if (entry.Key.compareEqualWith(barSets))
+                {
+                    dic[entry.Key] += 1;
+                    return;
+                }
+            }
+
+            // If not exist add
+            dic.Add(barSets, 1);
         }
     }
 }
