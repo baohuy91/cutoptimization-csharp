@@ -14,14 +14,10 @@ namespace CutOptimization
          */
         public static List<List<BarSet>> solve(List<BarSet> orderSets, double stockLength)
         {
-            return solveWithCleanUp(orderSets, stockLength, false, 0, 0);
+            return solveWithCleanUp(orderSets, stockLength);
         }
 
-        public static List<List<BarSet>> solveMinMax(List<BarSet> orderSets, double stockLength, double minLeftover, double maxLeftover)
-        {
-            return solveWithCleanUp(orderSets, stockLength, true, minLeftover, maxLeftover);
-        }
-        public static List<List<BarSet>> solveWithCleanUp(List<BarSet> orderSets, double stockLength, bool useMinMaxFilter, double minLeftover, double maxLeftover)
+        public static List<List<BarSet>> solveWithCleanUp(List<BarSet> orderSets, double stockLength)
         {
             // Sort DESC
             orderSets.Sort(delegate (BarSet a, BarSet b)
@@ -29,7 +25,7 @@ namespace CutOptimization
                 return Math.Sign(b.len - a.len);
             });
 
-            Pair<int, List<List<BarSet>>> remainRst = BruteForceSolver.solveRecursive(orderSets, stockLength, useMinMaxFilter, minLeftover, maxLeftover);
+            Pair<int, List<List<BarSet>>> remainRst = BruteForceSolver.solveRecursive(orderSets, stockLength);
             List<List<BarSet>> pttrns = remainRst.snd;
 
             // Remove BarSets in patterns that have num = 0
@@ -58,7 +54,7 @@ namespace CutOptimization
          * @param stockLength length of the bar in stock
          * @return a pair of minimum number of  required bar & patterns for each
          */
-        public static Pair<int, List<List<BarSet>>> solveRecursive(List<BarSet> orderSets, double stockLength, bool useMinMaxFilter, double minLeftover, double maxLeftover)
+        public static Pair<int, List<List<BarSet>>> solveRecursive(List<BarSet> orderSets, double stockLength)
         {
             // Stop if there is no more bar
             if (isEmpty(orderSets))
@@ -70,9 +66,6 @@ namespace CutOptimization
 
             // Generate all possible patterns
             List<List<BarSet>> possiblePatterns = calPossibleCutsFor1Stock(0, orderSets, stockLength);
-            if (useMinMaxFilter){
-                possiblePatterns = applyMinMaxFilter(possiblePatterns, stockLength, minLeftover, maxLeftover);
-            }
             
 
             // With each pattern, recursive solve the problem with remain orders
@@ -91,12 +84,8 @@ namespace CutOptimization
                 }
 
                 // Recursive solve
-                Pair<int, List<List<BarSet>>> optimizedPattern = solveRecursive(remainOrderSets, stockLength, useMinMaxFilter, minLeftover, maxLeftover);
+                Pair<int, List<List<BarSet>>> optimizedPattern = solveRecursive(remainOrderSets, stockLength);
 
-                // XXX: dangerous here
-                if (optimizedPattern == null){
-                    continue;
-                }
                 // Check if it new one better than current minimum
                 if (minPattern == null || optimizedPattern.fst + 1 < minPattern.fst)
                 {
@@ -150,21 +139,6 @@ namespace CutOptimization
             }
 
             return possiblePatterns;
-        }
-
-        public static List<List<BarSet>> applyMinMaxFilter(List<List<BarSet>> possiblePttrns, double stockLen, double minLeftover, double maxLeftover)
-        {
-            List<List<BarSet>> filteredPttrns = new List<List<BarSet>>();
-            foreach (List<BarSet> pttrn in possiblePttrns)
-            {
-                double leftover = stockLen - new BarSets(pttrn).countTotalLen();
-                if (leftover <= minLeftover || leftover >= maxLeftover)
-                {
-                    filteredPttrns.Add(pttrn);
-                }
-            }
-
-            return filteredPttrns;
         }
 
         private static int minInt(int a, int b)
