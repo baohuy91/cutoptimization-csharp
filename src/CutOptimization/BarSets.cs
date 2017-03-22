@@ -89,6 +89,16 @@ namespace CutOptimization
             return this;
         }
 
+        public BarSets sortDesc()
+        {
+            barSets.Sort(delegate (BarSet a, BarSet b)
+            {
+                return Math.Sign(b.len - a.len);
+            });
+
+            return this;
+        }
+
         // Return 0 if empty
         public double popLen()
         {
@@ -163,24 +173,19 @@ namespace CutOptimization
 
         public bool compareEqualWith(BarSets comparedBarSets)
         {
-            if (this.count() != comparedBarSets.count())
+            List<BarSet> bs1 = new BarSets(barSets).sortAsc().getBarSets();
+            List<BarSet> bs2 = new BarSets(comparedBarSets.getBarSets()).sortAsc().getBarSets();
+
+            if (bs1.Count != bs2.Count)
             {
                 return false;
             }
 
-            foreach (BarSet originBs in this.barSets)
+            for (int i = 0; i < bs1.Count; i++)
             {
-                foreach (BarSet bs in comparedBarSets.getBarSets())
+                if (bs1[i].len != bs2[i].len || bs1[i].num != bs2[i].num)
                 {
-                    if (originBs.len == bs.len)
-                    {
-                        if (originBs.num != bs.num)
-                        {
-                            return false;
-                        }
-
-                        continue;
-                    }
+                    return false;
                 }
             }
 

@@ -10,6 +10,8 @@ namespace CutOptimization
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 100d, 0.05)] // 0.15
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 330d }, new int[] { 3 }, 1, 10d, 0.01)]
         [InlineDataAttribute(1000d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 100d, 0.05)]
+        [InlineDataAttribute(300d, 0d, 0d, new double[] { 250d, 350d }, new int[] { 2, 1 }, 2, 100d, 0.17)]
+        [InlineDataAttribute(300d, 0d, 0d, new double[] { 250d, 350d, 200d }, new int[] { 2, 1, 1 }, 3, 200d, 0.23)]
         public void TestSolve(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums, int nRequiredBar, double expectedWastedLen, double lossRatio)
         {
             var orderSets = new List<BarSet>();
@@ -76,6 +78,19 @@ namespace CutOptimization
             BarSets ret = sut.optimizeToOneStock(stock, orders);
 
             Assert.Null(ret);
+        }
+
+        [Fact]
+        public void TestAddPatternToDictionary(){
+            var dic = new Dictionary<BarSets, int>();
+            BarSets bs1 = initPattern(new double[]{35d}, new int[]{1});
+            BarSets addedBs = initPattern(new double[]{30d}, new int[]{1});
+            dic.Add(bs1, 2);
+
+            MinMaxSolver.addPatternToDictionary(dic, addedBs);
+            
+            Assert.False(bs1.compareEqualWith(addedBs));
+            Assert.Equal(2, dic.Count);
         }
 
         private static BarSets initPattern(double[] lens, int[] nums)

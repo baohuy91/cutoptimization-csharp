@@ -99,6 +99,7 @@ namespace CutOptimization.Tests
         [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 3d }, new int[] { 2 }, false)]
         [InlineDataAttribute(new double[] { 5d }, new int[] { 3 }, new double[] { 5d, 3d }, new int[] { 2, 1 }, false)]
         [InlineDataAttribute(new double[] { 5d, 3d }, new int[] { 3, 2 }, new double[] { 3d, 5d }, new int[] { 2, 3 }, true)]
+        [InlineDataAttribute(new double[] { 35d }, new int[] { 1 }, new double[] { 30d }, new int[] { 1 }, false)]
         public void TestCompareEqualWith(double[] len1s, int[] num1s, double[] len2s, int[] num2s, bool expectedRet)
         {
             // Prepare
