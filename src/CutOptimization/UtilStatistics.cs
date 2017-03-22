@@ -16,7 +16,7 @@ namespace CutOptimization
                     remainLen -= barSet.len * barSet.num;
                 }
                 
-                totalWastedLen += remainLen > 200 ? (remainLen - 200) * nPatternCut : remainLen * nPatternCut;
+                totalWastedLen += remainLen > maxLeftover ? (remainLen - maxLeftover) * nPatternCut : remainLen * nPatternCut;
             }
 
             return totalWastedLen;

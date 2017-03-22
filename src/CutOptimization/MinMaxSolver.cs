@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 namespace CutOptimization
 {
@@ -20,7 +21,9 @@ namespace CutOptimization
          */
         public Dictionary<List<BarSet>, int> solve(List<BarSet> orderSets, double stockLen)
         {
-            BarSets orders = new BarSets(orderSets);
+            List<BarSet> newOrders = removeOrderLongerThanStock(orderSets, stockLen);
+            BarSets orders = new BarSets(newOrders);
+            orders.sortDesc();
 
             Dictionary<BarSets, int> pttrnMap = new Dictionary<BarSets, int>();
             while (orders.count() > 0)
@@ -29,7 +32,7 @@ namespace CutOptimization
                 if (pttrn == null)
                 {
                     // Can't solve with condition, return empty result
-                    return new Dictionary<List<BarSet>, int>();
+                    break;
                 }
                 addPatternToDictionary(pttrnMap, pttrn);
                 orders.substractAll(pttrn);
@@ -43,6 +46,19 @@ namespace CutOptimization
             return rstMap;
         }
 
+        private static List<BarSet> removeOrderLongerThanStock(List<BarSet> orginalOrders, double stock)
+        {
+            List<BarSet> newOrders = new List<BarSet>();
+            foreach (BarSet bs in orginalOrders)
+            {
+                if (bs.len <= stock)
+                {
+                    newOrders.Add(bs);
+                }
+            }
+
+            return newOrders;
+        }
 
         public BarSets optimizeToOneStock(double stockLen, BarSets orders)
         {
@@ -123,13 +139,14 @@ namespace CutOptimization
          * If bar sets with same pattern is exist, add up the count only
          * if not exist, add new pattern with count = 1 to dictionary
          */
-        private static void addPatternToDictionary(Dictionary<BarSets, int> dic, BarSets barSets)
+        public static void addPatternToDictionary(Dictionary<BarSets, int> dic, BarSets barSets)
         {
-            foreach (KeyValuePair<BarSets, int> entry in dic)
+            List<BarSets> bsKeys = new List<BarSets>(dic.Keys);
+            foreach (BarSets bsKey in bsKeys)
             {
-                if (entry.Key.compareEqualWith(barSets))
+                if (bsKey.compareEqualWith(barSets))
                 {
-                    dic[entry.Key] += 1;
+                    dic[bsKey] += 1;
                     return;
                 }
             }
