@@ -45,6 +45,7 @@ namespace CutOptimization.Tests
         [InlineDataAttribute(1100d, 0d, 30d, 200d, new double[] { 500d, 200d }, new int[] { 4, 12 }, 4, 0d, 0.00)]
         [InlineDataAttribute(6000d, 0d, 30d, 200d, new double[] { 2158d, 1656d, 1458d, 734d, 646d, 546d }, new int[] { 1065, 83, 565, 565, 556, 556 }, 758 /*738*/, 131650d /*38050d */, 0.03 /*0.01*/)]
         [InlineDataAttribute(1000d, 0d, 30d, 200d, new double[] { 150d }, new int[] { 10 }, 2, 100d /*300d*/, 0.05 /*0.15*/)]
+        [InlineDataAttribute(5800d, 1.5d, 270d, 280d, new double[] { 300.00, 150.00, 245.00, 246.00, 256.00, 250.00, 255.00, 400.00, 390.00, 265.00, 373.00, 370.00, 380.00, 352.00}, new int[] { 198, 12, 1, 7, 6, 3, 13, 16, 53, 44, 11, 53, 94, 43 }, 32, 3253d, 0.02)]
         public void TestcalRequiredBarCoreMinMax(double stock, double saw, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums, int nRequiredBar, double expectedWastedLen, double lossRatio)
         {
             // Input
@@ -79,7 +80,7 @@ namespace CutOptimization.Tests
         }
 
         [TheoryAttribute]
-        [InlineDataAttribute(1000d, 0d, 30d, 200d, new double[] { 900d}, new int[] { 10 })]
+        [InlineDataAttribute(1000d, 0d, 30d, 200d, new double[] { 900d }, new int[] { 10 })]
         public void TestcalRequiredBarCoreMinMax_WithCantCutCondition_ExpectEmptyResult(double stock, double saw, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums)
         {
             // Input

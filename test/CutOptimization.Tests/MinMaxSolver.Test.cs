@@ -33,7 +33,7 @@ namespace CutOptimization
         }
 
         [TheoryAttribute]
-        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 900d }, new int[] { 10 })] 
+        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 900d }, new int[] { 10 })]
         public void TestSolve_WithCantCutCodition(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums)
         {
             var orderSets = new List<BarSet>();
@@ -81,16 +81,34 @@ namespace CutOptimization
         }
 
         [Fact]
-        public void TestAddPatternToDictionary(){
+        public void TestAddPatternToDictionary()
+        {
             var dic = new Dictionary<BarSets, int>();
-            BarSets bs1 = initPattern(new double[]{35d}, new int[]{1});
-            BarSets addedBs = initPattern(new double[]{30d}, new int[]{1});
+            BarSets bs1 = initPattern(new double[] { 35d }, new int[] { 1 });
+            BarSets addedBs = initPattern(new double[] { 30d }, new int[] { 1 });
             dic.Add(bs1, 2);
 
             MinMaxSolver.addPatternToDictionary(dic, addedBs);
-            
+
             Assert.False(bs1.compareEqualWith(addedBs));
             Assert.Equal(2, dic.Count);
+        }
+
+
+        [TheoryAttribute]
+        [InlineDataAttribute(1000d, 30d, 200d, new double[] { 300d, 200d }, new int[] { 3, 3 }, new double[] { 200d, 200d, 300d, 300d })]
+        public void TestCalKnapsack(double stock, double minLeftover, double maxLeftover, double[] orderLens, int[] orderNums, double[] expectedNewPttrnPopLens)
+        {
+            BarSets orders = initPattern(orderLens, orderNums);
+            BarSets ret = MinMaxSolver.calKnapsack(stock, orders);
+            ret.sortAsc();
+            
+            // Assert.Equal("", ret.ToString());
+            Assert.Equal(expectedNewPttrnPopLens.Length, ret.count());
+            foreach (double expectedPopLen in expectedNewPttrnPopLens)
+            {
+                Assert.Equal(expectedPopLen, ret.popLen());
+            }
         }
 
         private static BarSets initPattern(double[] lens, int[] nums)
