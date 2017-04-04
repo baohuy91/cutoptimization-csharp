@@ -112,12 +112,6 @@ namespace CutOptimization
                 Console.WriteLine("Maximum of iter reached! Solution is not quite optimized");
             }
 
-            // Console.WriteLine("Optimized pattern: ");
-            // for (int r = 0; r < patternMat.Length; r++)
-            // {
-            //     Console.WriteLine("{0}: {1}", string.Join(", ", patternMat[r]), minPatternNums[r + 1]);
-            // }
-
             // ------------ Round up to keep integer part of result ----------------
             double[] remainOdNumVec = new double[odNumVec.Length];
             odNumVec.CopyTo(remainOdNumVec, 0);

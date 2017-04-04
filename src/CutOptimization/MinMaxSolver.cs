@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using lpsolve_win;
 namespace CutOptimization
 {
     public class MinMaxSolver
@@ -62,77 +63,40 @@ namespace CutOptimization
 
         public BarSets optimizeToOneStock(double stockLen, BarSets orders)
         {
-            List<List<BarSet>> notFilteredMinMaxPttns = BruteForceSolver.calPossibleCutsFor1Stock(0, orders.getBarSets(), stockLen);
-
-            BarSets optimizedBarSets = selectValidOptimizedBar(stockLen, notFilteredMinMaxPttns, minLeftOver, maxLeftOver);
-
-            if (optimizedBarSets != null)
+            BarSets optimizedBarSets = calKnapsack(stockLen, orders);
+            if (isValidOptimizedPattern(stockLen, optimizedBarSets, minLeftOver, maxLeftOver))
             {
                 return optimizedBarSets;
             }
 
             // If we failed, try to get pattern with usable leftover
-            List<List<BarSet>> pttnWithUsableLeftOver = BruteForceSolver.calPossibleCutsFor1Stock(0, orders.getBarSets(), stockLen - maxLeftOver);
-            foreach (List<BarSet> pttn in pttnWithUsableLeftOver)
+            optimizedBarSets = calKnapsack(stockLen - maxLeftOver, orders);
+            if (isValidOptimizedPattern(stockLen, optimizedBarSets, minLeftOver, maxLeftOver))
             {
-                BarSets bs = new BarSets(pttn);
-                if (optimizedBarSets == null)
-                {
-                    optimizedBarSets = bs;
-                    continue;
-                }
-
-                double optimizedLeftOver = stockLen - optimizedBarSets.countTotalLen();
-                double leftOver = stockLen - bs.countTotalLen();
-                if (leftOver <= optimizedLeftOver)
-                {
-                    optimizedBarSets = bs;
-                }
+                return optimizedBarSets;
             }
 
-            if (optimizedBarSets == null || optimizedBarSets.isEmpty())
-            {
-                return null;
-            }
-
-            return optimizedBarSets;
+            return null;
         }
 
         /**
          * Select the most optimized cut but doesn't violate the min max condition
          * It won't return empty bar sets
          */
-        private static BarSets selectValidOptimizedBar(double stockLen, List<List<BarSet>> notFilteredMinMaxPttns, double minLeftOver, double maxLeftOver)
+        private static bool isValidOptimizedPattern(double stockLen, BarSets pttn, double minLeftOver, double maxLeftOver)
         {
-            BarSets optimizedBarSets = null;
-            foreach (List<BarSet> pttn in notFilteredMinMaxPttns)
+            if (pttn == null || pttn.isEmpty())
             {
-                BarSets bs = new BarSets(pttn);
-                if (bs.isEmpty())
-                {
-                    continue;
-                }
-
-                double leftOver = stockLen - bs.countTotalLen();
-                if (leftOver < maxLeftOver && leftOver > minLeftOver)
-                {
-                    continue;
-                }
-
-                if (optimizedBarSets == null)
-                {
-                    optimizedBarSets = bs;
-                    continue;
-                }
-
-                double optimizedLeftOver = stockLen - optimizedBarSets.countTotalLen();
-                if (leftOver <= optimizedLeftOver)
-                {
-                    optimizedBarSets = bs;
-                }
+                return false;
             }
 
-            return optimizedBarSets;
+            double leftOver = stockLen - pttn.countTotalLen();
+            if (leftOver < maxLeftOver && leftOver > minLeftOver)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -153,6 +117,84 @@ namespace CutOptimization
 
             // If not exist add
             dic.Add(barSets, 1);
+        }
+
+        public static BarSets calKnapsack(double stockLen, BarSets orders)
+        {
+            List<BarSet> bsOrders = orders.getBarSets();
+            double[] orderNumVec = new double[bsOrders.Count + 1];
+            double[] orderLenVec = new double[bsOrders.Count + 1];
+            orderNumVec[0] = bsOrders.Count;
+            orderLenVec[0] = bsOrders.Count;
+            for (int i = 0; i < bsOrders.Count; i++)
+            {
+                orderNumVec[i + 1] = bsOrders[i].num;
+                orderLenVec[i + 1] = bsOrders[i].len;
+            }
+
+            double[][] rstMap = calKnapsackWithLpSolve(stockLen, orderNumVec, orderLenVec);
+            double[] patternVec = rstMap[1];
+
+            return filterEmptyBarInPattern(bsOrders, patternVec);
+        }
+
+        private static BarSets filterEmptyBarInPattern(List<BarSet> bsOrders, double[] patternVec)
+        {
+            List<BarSet> pattern = new List<BarSet>();
+            for (int i = 0; i < patternVec.Length; i++)
+            {
+                int nBar = (int)patternVec[i];
+                if (nBar > 0)
+                {
+                    pattern.Add(new BarSet(bsOrders[i].len, (int)patternVec[i]));
+                }
+            }
+
+            return new BarSets(pattern);
+        }
+
+        private static double[][] calKnapsackWithLpSolve(double stockLen, double[] orderNumVec, double[] orderLenVec)
+        {
+            int nVar = orderNumVec.Length - 1;
+            IntPtr solver = Lpsolve.make_lp(0, nVar);
+            Lpsolve.set_verbose(solver, 1);
+
+            // add constraints
+            Lpsolve.add_constraint(solver, orderLenVec, Lpsolve.lpsolve_constr_types.LE, stockLen);
+            // objArr.length is equal to nCol + 1
+            for (int c = 1; c <= nVar; c++)
+            {
+                Lpsolve.set_int(solver, c, 1);
+
+                double[] constraintVec = new double[nVar + 1];
+                constraintVec[0] = nVar;
+                for (int cIndex = 1; cIndex <= nVar; cIndex++)
+                {
+                    constraintVec[cIndex] = cIndex == c ? 1 : 0;
+                }
+                Lpsolve.add_constraint(solver, constraintVec, Lpsolve.lpsolve_constr_types.LE, orderNumVec[c]);
+            }
+
+            // set objective function
+            Lpsolve.set_obj_fn(solver, orderLenVec);
+            Lpsolve.set_maxim(solver);
+
+            // solve the problem
+            int solFlag = (int)Lpsolve.solve(solver);
+
+            // solution
+            double reducedCost = Lpsolve.get_objective(solver);
+            double[] var = new double[Lpsolve.get_Ncolumns(solver)];
+            Lpsolve.get_variables(solver, var);
+
+            // delete the problem and free memory
+            Lpsolve.delete_lp(solver);
+
+            // Prepare result
+            double[][] rst = new double[2][];
+            rst[0] = new double[] { reducedCost };
+            rst[1] = var;
+            return rst;
         }
     }
 }
